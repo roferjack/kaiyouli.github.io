@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <h2>经典面试题：函数按顺序执行，fn1函数延迟2s打印，fn2函数延迟1s打印，但fn1必须先执行，fn2后执行</h2>
+    <h4>1.同步方案：我太菜了，始终没想到啥办法做哈！直接是想执行谁先调用谁，但是根据js执行规律肯定是时间短的先执行哈</h4>
+    <p class="Sfn1">这里打印fn1的值（定时2s后打印：</p>
+    <p class="Sfn2">这里打印fn2的值（定时1s后打印）：</p>
+    <h4>2.定时器方案：使用标记去做切换，然后再次调用原来的函数</h4>
+    <p class="timerFn1">这里打印fn1的值（定时2s后打印：</p>
+    <p class="timerFn2">这里打印fn2的值（定时1s后打印）：</p>
+    <h4>3.异步方案：使用async/await</h4> <button onclick="start()">开始</button>
+    <p class="Afn1">这里打印fn1的值：</p>
+    <p class="Afn2">这里打印fn2的值：</p>
+    <div style="width: 250px; text-align:center;border: 1px solid red; position: fixed;top: 50%; right: 40%;">
+        <h3><button onclick="reset()">重置</button><span>当前时间</span><button onclick="stop()">暂停</button></h3>
+        <p class="time"></p>
+    </div>
+    <div style="width: 550px; text-align:center;border: 1px solid red; position: fixed;top: 50%; right: 2%;">
+        <div> <label for="inputBox"> 请输入未来时间<br /> (格式：xxxx/xx/xx xx:xx:xx ;日期分隔可用"-",'/','.',写时间必须要写到分钟) </label><br />
+            <input type="text" id="inputBox" value="" placeholder="请输入未来时间"> </div>
+        <div> <label> 倒计时总秒数<br /> <input type="text" id="remainingTime" value=""> </label> </div>
+        <h3><button class="start">开始倒计时</button><button class="stop">暂停</button><button class="reset">重置</button></h3>
+        <p>剩余时间：<span class="countDown"></span></p>
+    </div>
+</body>
+<script>
+    // --------------------同步方案 -----------------------------------------------------------
+{
+        function fn1() {
+            setTimeout(() => {
+                document.getElementsByClassName('Sfn1')[0].innerHTML += 1111111;
+                console.log("同步方案fn1", 1111111)
+            }, 2000)
+        }
+
+        function fn2() {
+            setTimeout(() => {
+                document.getElementsByClassName('Sfn2')[0].innerHTML += 2222222;
+                console.log("同步方案fn2", 2222222)
+            }, 1000)
+        }
+        fn1();    
+        fn2();
+}
+    // --------------------定时器方案 -----------------------------------------------------------
+{
+            function fn1() {
+                document.getElementsByClassName('timerFn1')[0].innerHTML += 1111111;
+                console.log('定时器fn1', 1111111)
+            };
+
+            function fn2() {
+                document.getElementsByClassName('timerFn2')[0].innerHTML += 2222222;
+                console.log('定时器fn2', 2222222)
+            };
+
+            function fn() {
+                var tag = 0;
+                (function aa() {
+                    if (tag ==
+                        0) { //满足条件，先执行
+                        setTimeout(() => {
+                            fn1();
+                            tag =
+                                1; //改变条件
+                            aa(); //再次条用父函数将会执行else 
+                        }, 2000)
+                    } else {
+                        setTimeout(() => {
+                            fn2();
+                        }, 1000);
+                    }
+                })()
+            }
+
+            fn()
+}
+    // ---------------------异步方案 -------------------------------------------------------------
+{
+                function fn1() {
+                    return new Promise((resolve, reject) => {
+                        let a = 10;
+                        setTimeout(() => {
+                            a++;
+                            resolve(a);
+                        }, 2000)
+                    }).then((res) => {
+                        document.getElementsByClassName('Afn1')[0].innerHTML += res;
+                        console.log('fn1', res);
+                    }).catch((err) => {
+                        console.log(err);
+                    })
+                };
+
+                function fn2() {
+                    return new Promise((resolve, reject) => {
+                        let b = 20;
+                        setTimeout(() => {
+                            b++;
+                            resolve(b)
+                        }, 1000)
+                    }).then((res) => {
+                        document.getElementsByClassName('Afn2')[0].innerHTML += res;
+                        console.log('fn2', res)
+                    }).catch((err) => {
+                        console.log(err)
+                    })
+                };
+                async function fn() {
+                    await fn1();
+                    await fn2();
+                }
+
+                function start() {
+                    fn()
+                }
+}
+    // ------------------------------------ 当前时间 ------------------------------------------------------------
+{
+                function time() {
+                    let date = new Date(),
+                        year = date.getFullYear(),
+                        month = date.getMonth() < 9 ? '0' + date.getMonth() + 1 : date.getMonth() + 1,
+                        day = date.getDate(),
+                        DateDate = `${year}年${month}月${day}日`,
+                        hour = date.getHours() < 10 ? '0' + date.getHours() : date.getHours(),
+                        minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes(),
+                        seconds = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds(),
+                        DateTime = `${year}年${month}月${day}日${hour}时${minutes}分钟${seconds}秒`;
+                    document.getElementsByClassName('time')[0].innerHTML =
+                        DateTime;
+                    // console.log(date,DateTime)    
+                }
+                //初始化    
+                var timer = null;
+                timer = setInterval(() => {
+                        time()
+                    },
+                    1000);
+                //重置    
+                var timerReset = null;
+
+                function reset() {
+                    if (timer !== null) clearInterval(timer);
+                    if (timerReset !== null) clearInterval(timerReset);
+                    timerReset = setInterval(() => {
+                        time()
+                    }, 1000);
+                }
+                //暂停    
+                function stop() {
+                    if (timerReset !== null) clearInterval(timerReset);
+                    if (timer !== null) clearInterval(timer)
+                }
+}
+    // --------------------------------------倒计时------------------------------------------------------------
+{
+                //获取元素    
+                var OInputBox = document.getElementById('inputBox');
+                var ORemainingTime = document.getElementById('remainingTime');
+                var OCountDown = document.getElementsByClassName('countDown')[0];
+                var OSatrt = document.getElementsByClassName('start')[0];
+                var Ostop = document.getElementsByClassName('stop')[0];
+                var Oreset = document.getElementsByClassName('reset')[0]
+                // OInputBox.value =new Date(); 
+                var countDownTimer = null;
+                OSatrt.addEventListener('click', function () {
+                    if (OInputBox.value == '') {
+                        alert('请输入时间');
+                        return
+                    }
+                    if (countDownTimer !== null) clearInterval(countDownTimer);
+                    countDownTimer = setInterval(
+                        () => {
+                            assignment(OInputBox.value)
+                        }, 1000)
+                })
+
+                function assignment(params) {
+                    if (params == '') return;
+                    let date =
+                        new Date(), //现在的日期              
+                        NowTimeStamp = date.getTime(), //获取现在的时间戳            
+                        FutureDate = new Date(params),
+                        FutureTimeStamp = FutureDate.getTime(), //获取用户的时间戳            
+                        TotalSeconds = FutureTimeStamp - NowTimeStamp, //时间戳差            
+                        RemainingSeconds = Math.floor(TotalSeconds / 1000);
+                    ORemainingTime.value = RemainingSeconds;
+                    console.log(date);
+                    console.log(FutureDate);
+                    if (TotalSeconds < 0) {
+                        console.log('请输入未来时间')
+                    }
+                    var d = Math.floor(RemainingSeconds / 60 / 60 / 24),
+                        h = Math.floor(RemainingSeconds / 60 / 60 % 24),
+                        m = Math.floor(RemainingSeconds / 60 % 60);
+                    s = Math.floor(RemainingSeconds % 60);
+                    d = d < 10 ? '0' + d : d;
+                    h = h < 10 ? '0' + h : h;
+                    m = m < 10 ? '0' + m : m;
+                    s = s < 10 ? '0' + s : s;
+                    console.log(d, h, m, s);
+                    TheTemainingTime = `${d}天${h}小时${m}分钟${s}秒`;
+                    document.getElementsByClassName('countDown')[0].innerHTML = TheTemainingTime
+                }
+                Ostop.addEventListener('click', function () {
+                    if (countDownTimer !== null) clearInterval(countDownTimer)
+                });
+                Oreset.addEventListener('click', function () {
+                    if (countDownTimer !== null) clearInterval(countDownTimer);
+                    OInputBox.value = '';
+                    ORemainingTime.value = '';
+                    OCountDown.innerHTML = '';
+                })
+}
+</script>
+
+</html>
